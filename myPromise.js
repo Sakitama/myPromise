@@ -1,6 +1,7 @@
 try {
     module.exports = Promise
-} catch (e) {}
+} catch (e) {
+}
 
 function Promise(executor) {
     var self = this
@@ -13,7 +14,7 @@ function Promise(executor) {
         if (value instanceof Promise) {
             return value.then(resolve, reject)
         }
-        setTimeout(function() { // 异步执行所有的回调函数
+        setTimeout(function () { // 异步执行所有的回调函数
             if (self.status === 'pending') {
                 self.status = 'resolved'
                 self.data = value
@@ -25,7 +26,7 @@ function Promise(executor) {
     }
 
     function reject(reason) {
-        setTimeout(function() { // 异步执行所有的回调函数
+        setTimeout(function () { // 异步执行所有的回调函数
             if (self.status === 'pending') {
                 self.status = 'rejected'
                 self.data = reason
@@ -52,11 +53,11 @@ function resolvePromise(promise2, x, resolve, reject) {
     }
 
     if (x instanceof Promise) {
-        if (x.status === 'pending') { //because x could resolved by a Promise Object
-            x.then(function(v) {
+        if (x.status === 'pending') {
+            x.then(function (v) {
                 resolvePromise(promise2, v, resolve, reject)
             }, reject)
-        } else { //but if it is resolved, it will never resolved by a Promise Object but a static value;
+        } else {
             x.then(resolve, reject)
         }
         return
@@ -64,7 +65,7 @@ function resolvePromise(promise2, x, resolve, reject) {
 
     if ((x !== null) && ((typeof x === 'object') || (typeof x === 'function'))) {
         try {
-            then = x.then //because x.then could be a getter
+            then = x.then
             if (typeof then === 'function') {
                 then.call(x, function rs(y) {
                     if (thenCalledOrThrow) return
@@ -88,19 +89,19 @@ function resolvePromise(promise2, x, resolve, reject) {
     }
 }
 
-Promise.prototype.then = function(onResolved, onRejected) {
+Promise.prototype.then = function (onResolved, onRejected) {
     var self = this
     var promise2
-    onResolved = typeof onResolved === 'function' ? onResolved : function(v) {
-            return v
-        }
-    onRejected = typeof onRejected === 'function' ? onRejected : function(r) {
-            throw r
-        }
+    onResolved = typeof onResolved === 'function' ? onResolved : function (v) {
+        return v
+    }
+    onRejected = typeof onRejected === 'function' ? onRejected : function (r) {
+        throw r
+    }
 
     if (self.status === 'resolved') {
-        return promise2 = new Promise(function(resolve, reject) {
-            setTimeout(function() { // 异步执行onResolved
+        return promise2 = new Promise(function (resolve, reject) {
+            setTimeout(function () { // 异步执行onResolved
                 try {
                     var x = onResolved(self.data)
                     resolvePromise(promise2, x, resolve, reject)
@@ -112,8 +113,8 @@ Promise.prototype.then = function(onResolved, onRejected) {
     }
 
     if (self.status === 'rejected') {
-        return promise2 = new Promise(function(resolve, reject) {
-            setTimeout(function() { // 异步执行onRejected
+        return promise2 = new Promise(function (resolve, reject) {
+            setTimeout(function () { // 异步执行onRejected
                 try {
                     var x = onRejected(self.data)
                     resolvePromise(promise2, x, resolve, reject)
@@ -125,9 +126,9 @@ Promise.prototype.then = function(onResolved, onRejected) {
     }
 
     if (self.status === 'pending') {
-        // 这里之所以没有异步执行，是因为这些函数必然会被resolve或reject调用，而resolve或reject函数里的内容已是异步执行，构造函数里的定义
-        return promise2 = new Promise(function(resolve, reject) {
-            self.onResolvedCallback.push(function(value) {
+        // 这里之所以没有异步执行，是因为这些函数必然会被 resolve 或 reject 调用，而 resolve 或 reject 函数里的内容已是异步执行，构造函数里的定义
+        return promise2 = new Promise(function (resolve, reject) {
+            self.onResolvedCallback.push(function (value) {
                 try {
                     var x = onResolved(value)
                     resolvePromise(promise2, x, resolve, reject)
@@ -136,7 +137,7 @@ Promise.prototype.then = function(onResolved, onRejected) {
                 }
             })
 
-            self.onRejectedCallback.push(function(reason) {
+            self.onRejectedCallback.push(function (reason) {
                 try {
                     var x = onRejected(reason)
                     resolvePromise(promise2, x, resolve, reject)
@@ -148,13 +149,13 @@ Promise.prototype.then = function(onResolved, onRejected) {
     }
 }
 
-Promise.prototype.catch = function(onRejected) {
+Promise.prototype.catch = function (onRejected) {
     return this.then(null, onRejected)
 }
 
-Promise.deferred = Promise.defer = function() {
+Promise.deferred = Promise.defer = function () {
     var dfd = {}
-    dfd.promise = new Promise(function(resolve, reject) {
+    dfd.promise = new Promise(function (resolve, reject) {
         dfd.resolve = resolve
         dfd.reject = reject
     })
